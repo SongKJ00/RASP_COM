@@ -6,7 +6,7 @@ import os
 blue = 13
 green = 26 
 red = 19
-PIR = 18
+PIR = 22 
 sw = 9
 
 GPIO.setmode(GPIO.BCM)
@@ -53,6 +53,7 @@ GPIO.output(green, True)
 GPIO.output(blue, False)
 GPIO.output(red, False)
 time.sleep(5)
+picture_flag = True
 
 try:
 	while True:
@@ -68,22 +69,34 @@ try:
 				GPIO.output(blue, True)
 				GPIO.output(red, False)
 				GPIO.output(green, False)
+				#take a picture only once
+				if picture_flag == True:
+					os.system('raspistill -vf -o image.jpg -t 1')
+					#os.system('ps -ef > killed_ps.txt')
+					f = open('kill_flag.txt', 'w')
+					f.write('1')
+					f.close()
+					os.system('gpicview image.jpg')
+					time.sleep(5)
+					#picture_flag = False
 #				while True:	#서버에서 종료 시그널이 올 때까지 데이터 송신 없이 기다림
 #					signal = s.recv(1024).decode('utf-8')
 #					if signal == 'E':
 #						break
 			else: 
+				if picture_flag == False:
+					picture_flag = True
 				print('motion non-detected')
 				s.send('F'.encode('utf-8'))
-				GPIO.output(red, True)
+				GPIO.output(red, False)
 				GPIO.output(blue,False)
-				GPIO.output(green, False)
+				GPIO.output(green, True)
 			time.sleep(0.1)
 			
-			if GPIO.input(sw) == False:
-				GPIO.output(red, True)
-				GPIO.output(blue, True)
-				GPIO.output(green, False)
+#if GPIO.input(sw) == False:
+#				GPIO.output(red, True)
+#				GPIO.output(blue, True)
+#				GPIO.output(green, False)
 		except IOError:
 			pass
 
